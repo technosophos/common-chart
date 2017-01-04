@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+description: Common chartbuilding components and helpers
+name: common
+version: 0.0.1
+
+...
+files:
+  common-0.0.1.tgz: sha256:7fd5f25d9713e3f51d8cac2dd131473f25f8772ff1305ce4d86a13242e7b5c34
+-----BEGIN PGP SIGNATURE-----
+
+wsFcBAEBCAAQBQJYbWn8CRBi9J50fZEbYAAAiHMQALX70+doxRKw3zAhTJDSPNEp
+qa79nPvs/GbG1J007kxiSuublZzy6i2CKcZjssjQuKq2snfYUGyTNexOaDacRXgJ
+fg0ikuFI2RhTAsaSXaCFwubJHlRC9YXCXlp1k7fcp43Q61/2zZ8WtteYqXz14GxP
+1teR5iGVtuhoEsqsKANBCkP4F4hQTzOERR+vX3dkF/MKGEkDwe5WEMzYcjj7nwrJ
+xdfbszHVWcL+0+aHNzT/Jmi988kd3uSacEu7/dvf2LLyPL6Y1epBaEZc1/XW0ucD
+VK7ES4hc0CVEV+qqnNqwPAhIIRdnFN786QuKQ9xFUxu3UIIt+fPr2p2+I7mtDSfm
+vYePzD6vYr/jYwRQiD2r487fHVg6gJw0aYaLJwAsfsR36NLPQMLDIfWxc58wwVGF
+Sr+MaO9SxAa5WNPOooavaBtQ1etNQDtICs5Y+/5yNF9okd/PIXmrZEkLnuoCSdKi
+9pqadwTDUVAr3v+uLFaQWpdq6eAJN4eHimfAMSgXrYt5aSSIXwKyCeCfMj1VHHiO
+f/3wwM5LN5d/AnE+P8tPZlryw2krLh59d2HpvXxfKNriAWZyA2Dv9LPNwLDbgDYt
+ZU43snTROI11YFobTB0VY57MeYBLeG4BT9Mkby0Ovf8QvqTDzH8hyfDrhvkolzFn
+kzg+gf6ZbSX9Q7a4Mewk
+=wotO
+-----END PGP SIGNATURE-----
