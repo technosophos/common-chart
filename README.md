@@ -12,8 +12,7 @@ The Common chart is served out of a GitHub Pages Repository. To register the
 repository, do this:
 
 ```
-$ helm repo add common 
-
+$ helm repo add common https://technosophos.github.io/common-chart/
 ```
 
 ## Example Usage
@@ -73,4 +72,7 @@ spec:
     app: RELEASE-NAME-mychart
 ```
 
+## Developers
 
+If you are developing on this project, you can use `make build` to build the
+charts. Note that the makefile requires signing your chart.
