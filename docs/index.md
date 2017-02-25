@@ -275,7 +275,7 @@ kind: Service
 metadata:
   name: release-name-service-mail       # note '-mail' is the suffix.
   labels:
-    provides: release-name-service-mail
+    provides: release-name-service-mail # this is automatically generated
     app: release-name-service           # app is not given the suffix.
     heritage: "Tiller"
     release: "RELEASE-NAME"
