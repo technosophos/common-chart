@@ -1,10 +1,12 @@
 # Common: A Utility Chart for Helm
 
-One little-know feature of Helm charts is the ability to share chart definitions
+One little-know feature of [Helm](http://helm.sh) charts is the ability to share chart definitions
 among all templates in a chart, including any of the subchart templates.
 
 The `common` chart is a chart that defines commonly used Chart primitives that
 can be used in all of your charts.
+
+See the [Documentation](docs/index.md) for complete API documentation and examples.
 
 ## Repository
 
