@@ -1,0 +1,5 @@
+{{ $params := dict "top" . "service" .Values.mailService -}}
+{{ template "common.service" $params }}
+---
+{{ $params := dict "top" . "service" .Values.webService -}}
+{{ template "common.service" $params }}

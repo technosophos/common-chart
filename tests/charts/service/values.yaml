@@ -1,0 +1,29 @@
+# Default values
+#
+
+# Define a mail service
+mailService:
+  suffix: "-mail"    # Appended to the fullname of the service (optional)
+  labels:            # Appended to the labels section. (optional)
+    protocol: mail
+  ports:             # Composes the 'ports' section of the service definition.
+    - name: smtp
+      port: 22
+      targetPort: 22
+    - name: imaps
+      port: 993
+      targetPort: 993
+  selector:          # This REPLACES the default selector. (optional)
+    protocol: mail
+
+# Define a web service
+webService:
+  suffix: "-www"
+  labels:
+    protocol: www
+  ports:
+    - name: www
+      port: 80
+      targetPort: 8080
+  extraSelector:     # This IS APPENDED TO the default selector (optional)
+    protocol: www

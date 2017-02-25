@@ -192,3 +192,125 @@ portString: "1234"
 Kubernetes defines a variety of resource kinds, from `Secret` to `StatefulSet`.
 We define some of the most common kinds in a way that lets you easily work with
 them.
+
+The resource kind templates are designed to make it much faster for you to
+define _basic_ versions of these resources. They don't allow you to modify
+every single aspect of the definition, but they provide access to the general
+information.
+
+Often times, using these templates will require you to set up a special context
+for the template with something like this:
+
+```yaml
+{{ $params := dict "top" . "service" $extraStuff }}
+```
+
+`"top"` should always point to the root context (`.`) or a facsimile.
+
+In general, the library is designed with the idea that most information is passed
+directly from the values.
+
+### `common.service`
+
+The `common.service` template receives the top level context and a service
+definition, and creates a service resource.
+
+Example template:
+
+```yaml
+{{ $params := dict "top" . "service" .Values.mailService -}}
+{{ template "common.service" $params }}
+---
+{{ $params := dict "top" . "service" .Values.webService -}}
+{{ template "common.service" $params }}
+```
+
+The above template defines _two_ services: a web service and a mail service. Note
+that the `common.service` template defines two parameters:
+
+  - `top`: The global context (usually `.`)
+  - `service`: A service definition. In the example above, it is passed directly
+    from the values.
+
+Example values:
+
+```yaml
+# Define a mail service
+mailService:
+  suffix: "-mail"    # Appended to the fullname of the service (optional)
+  labels:            # Appended to the labels section. (optional)
+    protocol: mail
+  ports:             # Composes the 'ports' section of the service definition.
+    - name: smtp
+      port: 22
+      targetPort: 22
+    - name: imaps
+      port: 993
+      targetPort: 993
+  selector:          # This REPLACES the default selector. (optional)
+    protocol: mail
+
+# Define a web service
+webService:
+  suffix: "-www"
+  labels:
+    protocol: www
+  ports:
+    - name: www
+      port: 80
+      targetPort: 8080
+  extraSelector:     # This IS APPENDED TO the default selector (optional)
+    protocol: www
+```
+
+The most important part of a service definition is the `ports` object, which
+defines the ports that this service will listen on. Most of the time,
+`selector` is computed for you. But you can replace it or add to it.
+
+The output of running the above values through the earlier template is:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-service-mail       # note '-mail' is the suffix.
+  labels:
+    provides: release-name-service-mail
+    app: release-name-service           # app is not given the suffix.
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: service-0.1.0
+    protocol: "mail"
+spec:
+  ports:
+  - port: 22
+    targetPort: 22
+    name: smtp
+  - port: 993
+    targetPort: 993
+    name: imaps
+  selector:
+    protocol: mail
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-service-www
+  labels:
+    provides: release-name-service-www
+    app: release-name-service
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: service-0.1.0
+    protocol: "www"
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: www
+  selector:
+    provides: release-name-service-www  # 'provides' is the default selector.
+    protocol: www
+
+```

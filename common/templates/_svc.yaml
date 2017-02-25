@@ -1,23 +1,38 @@
-{{define "common.service"}}
+{{- /*
+common.service provides a template for building a basic Service.
+
+The passed in context MUST be structured like this:
+  - .top must contain the top-level context (.Values, .Chart ...)
+  - .service must contain the service definition
+
+*/ -}}
+{{- define "common.service" -}}
+{{- $fullname := include "common.fullname" .top -}}
+{{- $overrideName := default "" .service.suffix | printf "%s%s" $fullname -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{template "common.fullname" .}}
+  name: {{ $overrideName }}
   labels:
-    {{block "common.service.labels" . -}}
-    {{ template "common.metadata.labels" . }}
-    {{- end}}
-    {{- block "common.service.xlabels" .}}{{end}}
+    provides: {{ $overrideName }}
+{{ include "common.labels.standard" .top | indent 4}}
+{{- if .service.labels -}}
+{{ include "common.labelize" .service.labels | indent 4 }}
+{{- end }}
 spec:
   ports:
-  {{block "common.service.ports" . -}}
-  - port: {{default 80 .Values.commonServicePort}}
-    targetPort: {{default 80 .Values.commonServiceTargetPort}}
-    protocol: TCP
-    name: http
-  {{- end}}
+  {{- range .service.ports }}
+  - port: {{ default 80 .port | include "common.port" }}
+    targetPort: {{ default 80 .targetPort | include "common.port" }}
+    {{ if .protocol }}protocol: {{ .protocol }}{{ end -}}
+    {{ if .name }}name: {{ default "default" .name }}{{ end -}}
+  {{- end }}
   selector:
-    {{- block "common.service.selector" . }}
-    app: {{template "common.fullname" .}}
-    {{- end}}
-{{end}}
+  {{- if .service.selector -}}
+{{ toYaml .service.selector | indent 4 }}
+  {{- else }}
+    provides: {{ $overrideName }}
+    {{- if .service.extraSelector }}
+{{ toYaml .service.extraSelector | indent 4 }}{{ end }}
+  {{- end -}}
+{{ end }}
