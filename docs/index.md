@@ -6,6 +6,14 @@ charts.
 It provides utilities that reflect best practices of Kubernetes chart development,
 making it faster for you to write charts.
 
+## Tips
+
+A few tips for working with Common:
+
+- Use `{{ include "some.template" | indent $number }}` to produce formatted output.
+- Be careful when using functions that generate random data (like `common.fullname.unique`).
+  They may trigger unwanted upgrades or have other side effects.
+
 ## Utilities
 
 ### `common.fullname`

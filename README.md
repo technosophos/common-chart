@@ -33,7 +33,7 @@ $ helm fetch common
 ```
 
 Use the `common.*` definitions in your code. For example, we could add this to
-the automatically generated `templates/service.yaml`.
+a chart's `templates/service.yaml`.
 
 
 ```yaml
@@ -42,27 +42,35 @@ kind: Service
 metadata:
   name: {{ include "common.fullname" . }} # <--- THE IMPORTANT PART
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+{{ include "common.labels.standard" . | indent 4 }} # <--- Ooo... look.
 spec:
   type: {{ .Values.service.type }}
   ports:
-  - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
+  # common.port handles formatting of port numbers.
+  - port: {{ include "common.port" .Values.service.externalPort }}
+    targetPort: {{ include "common.port" .Values.service.internalPort }}
     protocol: TCP
     name: {{ .Values.service.name }}
   selector:
     app: {{ template "common.fullname" . }} # Another way to accomplish this
 ```
 
-That will use the common chart's `common.fullname` template, but use the variables
-from the template in which the `common.fullname` definition is used. So the output
-will be something like this:
+Above, we use three of the common tools:
+
+- `common.fullname` to generate a full name for our service
+- `common.labels.standard` to generate the standard labels for us
+- `common.port` to format port numbers for us
+
+The above will produce something like this:
 
 ```yaml
 metadata:
-  name: RELEASE-NAME-mychart
+  name: release-name-mychart
   labels:
+    app: "release-name-mychart"
     chart: "mychart-0.1.0"
+    heritage: "Tiller"
+    release: RELEASE-NAME
 spec:
   type: ClusterIP
   ports:
@@ -71,8 +79,10 @@ spec:
     protocol: TCP
     name: nginx
   selector:
-    app: RELEASE-NAME-mychart
+    app: release-name-mychart
 ```
+
+The Common chart has many other utilities.
 
 ## Developers
 
