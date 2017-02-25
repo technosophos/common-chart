@@ -4,18 +4,6 @@ templates.
 
 */}}
 
-{{/*
-fullname defines a suitably unique name for a resource by combining
-the release name and the chart name.
-
-Note that we truncate fullname at 24 characters so that it can be used inside
-of a `metadata:name` field.
-
-Usage: 'name: "{{template "fullname" .}}"'
-*/}}
-{{define "common.fullname"}}
-{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 54 -}}
-{{end}}
 
 {{define "common.chartref"}}{{printf "%s-%s" .Chart.Name .Chart.Version}}{{end}}
 
