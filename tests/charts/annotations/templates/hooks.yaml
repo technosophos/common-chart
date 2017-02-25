@@ -1,0 +1,2 @@
+# "helm.sh/hook": "pre-install,post-install"
+{{ template "common.hook" "pre-install,post-install" }}

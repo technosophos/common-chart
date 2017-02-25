@@ -1,0 +1,2 @@
+# chartref: chartref-0.111.2222-alpha.333_445566
+chartref: {{ template "common.chartref" . }}

@@ -1,0 +1,12 @@
+# first: "1"
+# second: "2"
+# third: "\"3\""
+{{- $three := quote "3" -}}
+{{- $map := dict "first" "1" "second" "2" "third" $three -}}
+{{- template "common.labelize" $map }}
+---
+# app: release-name-labelizer
+# heritage: "Tiller"
+# release: "RELEASE-NAME"
+# chart: "labelizer-0.1.0"
+{{ template "common.standard.labels" . -}}
