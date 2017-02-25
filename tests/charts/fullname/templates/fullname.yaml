@@ -1,2 +1,4 @@
 # name: pp-pre-release-name-fullname-suf-ps
 name: {{ template "common.fullname" . }}
+# uniqueName: pp-pre-release-name-fullname-suf-ps-XXXXXXX
+uniqueName: {{ template "common.fullname.unique" . }}

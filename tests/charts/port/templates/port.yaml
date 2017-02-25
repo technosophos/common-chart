@@ -1,0 +1,8 @@
+# port1: 1234
+port1: {{ template "common.port" 1234 }}
+# port2: 4321
+port2: {{ template "common.port" "4321" }}
+# port3: 8080
+port3: {{ template "common.port" ":8080" }}
+# portString: "1234"
+portString: {{ template "common.port.string" 1234 }}

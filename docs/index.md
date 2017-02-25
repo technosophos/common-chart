@@ -47,6 +47,40 @@ name: pp-pre-some-name-suf-ps
 name: happy-panda-wordpress
 ```
 
+Output of this function is truncated at 54 characters, which leaves 9 additional
+characters for customized overriding. Thus you can easily extend this name
+in your own charts:
+
+```yaml
+{{- define "my.fullname" -}}
+  {{ template "common.fullname" . }}-my-stuff
+{{- end -}}
+```
+
+### `common.fullname.unique`
+
+The `common.fullname.unique` variant of fullname appends a unique seven-character
+sequence to the end of the common name field.
+
+This takes all of the same parameters as `common.fullname`
+
+Example template:
+
+```yaml
+uniqueName: {{ template "common.fullname.unique" . }}
+```
+
+Example output:
+
+```yaml
+uniqueName: release-name-fullname-jl0dbwx
+```
+
+It is also impacted by the prefix and suffix definitions, as well as by
+`.Values.fullnameOverride`
+
+Note that the effective maximum length of this function is 63 characters, not 54.
+
 ### `common.labelize`
 
 `common.labelize` turns a map into a set of labels.
@@ -119,3 +153,28 @@ chartref: foo-1.2.3-beta.55_1234
 ```
 
 (Note that `+` is an illegal character in label values)
+
+### `common.port` and `common.port.string`
+
+`common.port` takes a port in either numeric or colon-numeric (":8080") syntax
+and converts it to an integer.
+
+`common.port.string` does the same, but formats the result as a string (in quotes)
+to satisfy a few places in Kubernetes where ports are passed as strings.
+
+Example template:
+
+```yaml
+port1: {{ template "common.port" 1234 }}
+port2: {{ template "common.port" "4321" }}
+port3: {{ template "common.port" ":8080" }}
+portString: {{ template "common.port.string" 1234 }}
+```
+
+Example output:
+```yaml
+port1: 1234
+port2: 4321
+port3: 8080
+portString: "1234"
+```

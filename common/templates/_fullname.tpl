@@ -26,3 +26,13 @@ Usage: 'name: "{{- template "common.fullname" . -}}"'
   {{- $name := print $gpre $pre $base $suf $gsuf -}}
   {{- $name | lower | trunc 54 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- /*
+common.fullname.unique adds a random suffix to the unique name.
+
+This takes the same parameters as common.fullname
+
+*/ -}}
+{{- define "common.fullname.unique" -}}
+  {{ template "common.fullname" . }}-{{ randAlphaNum 7 | lower }}
+{{- end }}
