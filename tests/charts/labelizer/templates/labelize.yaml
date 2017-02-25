@@ -9,4 +9,4 @@
 # heritage: "Tiller"
 # release: "RELEASE-NAME"
 # chart: "labelizer-0.1.0"
-{{ template "common.standard.labels" . -}}
+{{ template "common.labels.standard" . -}}

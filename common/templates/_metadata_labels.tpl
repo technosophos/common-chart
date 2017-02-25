@@ -16,11 +16,11 @@ Example output:
 {{- end -}}
 
 {{- /*
-common.standard.labels prints the standard Helm labels.
+common.labels.standard prints the standard Helm labels.
 
 The standard labels are frequently used in metadata.
 */ -}}
-{{- define "common.standard.labels" -}}
+{{- define "common.labels.standard" -}}
 app: {{template "common.fullname" .}}
 heritage: {{ .Release.Service | quote }}
 release: {{ .Release.Name | quote }}

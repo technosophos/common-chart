@@ -108,14 +108,14 @@ second: "2"
 third: "3"
 ```
 
-### `common.standard.labels`
+### `common.labels.standard`
 
-`common.standard.labels` prints the standard set of labels.
+`common.labels.standard` prints the standard set of labels.
 
 Example usage:
 
 ```
-{{ template "common.standard.labels" . }}
+{{ template "common.labels.standard" . }}
 ```
 
 Example output:
@@ -186,3 +186,9 @@ port2: 4321
 port3: 8080
 portString: "1234"
 ```
+
+## Resource Kinds
+
+Kubernetes defines a variety of resource kinds, from `Secret` to `StatefulSet`.
+We define some of the most common kinds in a way that lets you easily work with
+them.
