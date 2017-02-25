@@ -1,4 +1,4 @@
-# Common: A Utility Chart for Helm
+# Common: The Helm Helper Chart
 
 One little-know feature of [Helm](http://helm.sh) charts is the ability to share chart definitions
 among all templates in a chart, including any of the subchart templates.
