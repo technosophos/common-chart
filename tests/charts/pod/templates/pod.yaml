@@ -1,0 +1,5 @@
+{{- $params := dict "top" . "pod" .Values.minimalPod -}}
+{{ template "common.pod.simple" $params }}
+---
+{{ $params := dict "top" . "pod" .Values.regularPod -}}
+{{ template "common.pod.simple" $params }}

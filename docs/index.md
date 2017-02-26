@@ -14,6 +14,8 @@ A few tips for working with Common:
 - Be careful when using functions that generate random data (like `common.fullname.unique`).
   They may trigger unwanted upgrades or have other side effects.
 
+In this document, we use `RELEASE-NAME` as the name of the release.
+
 ## Utilities
 
 ### `common.fullname`
@@ -314,3 +316,272 @@ spec:
     protocol: www
 
 ```
+
+## `common.pod.simple`
+
+The `common.pod.simple` template defines a basic pod. Underneath the hood,
+it uses `common.podspec.simple`.
+
+The simple pod template takes two objects:
+
+  - `top`: The global context (usually `.`)
+  - `pod`: A pod definition.
+
+It is designed to be easily used from a values file.
+
+Example template:
+
+```yaml
+{{- $params := dict "top" . "pod" .Values.minimalPod -}}
+{{ template "common.pod.simple" $params }}
+---
+{{ $params := dict "top" . "pod" .Values.regularPod -}}
+{{ template "common.pod.simple" $params }}
+```
+
+The above declares two pods, passing both pods data directly from the values
+file. Here are the values for two pods. Note that the `minimalPod` has only
+one property: `image`. All others are optional.
+
+Example values:
+
+```yaml
+minimalPod:       # The only required field is image.
+  image: nginx    # This will be resolved to nginx:latest
+
+regularPod:
+  image: alpine         # image is combined with tag.
+  tag: "3.5"
+  command: "sleep"
+  args: ["900"]
+  labels:               # This is an abritrary list of labels, appended to regular labels.
+    task: "sleeper"
+  annotations:
+    foo: bar
+  hook: "pre-install"   # Formatted as a helm hook and merged into the annotations
+  volumeMounts:         # Define volume mounts and volumes.
+    - mountPath: "/cache"
+      name: "cache-volume"
+  volumes:
+    - name: "cache-volume"
+      emptyDir: {}
+  imagePullSecrets:     # Add imagePullSecrets if image needs them.
+    - name: "dockerhub-secret"
+  ports:
+    - name: web
+      containerPort: 8080
+  env:
+    - name: "ENV_VAR"
+      value: "1"
+    - name: "ENV_VAR2"
+      value: "2"
+    - name: "PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: "some-secret-out-there"
+          key: "password"
+  persistence:      # See notes on persistence.
+    enabled: true
+    mounts:         # If a persistence section is specified, there must be at least one mount
+      - suffix: "-cache"
+        path: "/cache"
+      - suffix: "-data"
+        path: "/var/run/data"
+  livenessProbe:    # probes are passed in as-is
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 120
+    timeoutSeconds: 5
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    timeoutSeconds: 1
+  resources:        # resources are passed in as-is
+    requests:
+      memory: 512Mi
+```
+
+The `minimalPod` section defines a pod with the minimum number of fields, while
+the `regularPod` defines many of the common attributes.
+
+The `persistence` section has the following behavior:
+
+- if `enabled` is true, this will use PVCs. If `false`, it will use `emptyDir`.
+- both the `volumeMount` and `volume` sections are generated from the `mounts`
+  data.
+- volume names are generated dynamically, using `common.fullname` plus `suffix`.
+- the PVC claimName is named with the same formula.
+- if `persistence` is present, _at least one mount must be provided_.
+
+
+The result of running the above values through the template is this:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: release-name-pod
+  labels:
+    app: release-name-pod
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: pod-0.1.0
+  annotations:
+spec:
+  containers:
+    -
+      image: "nginx:latest"
+      imagePullPolicy: ""
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: release-name-pod
+  labels:
+    app: release-name-pod
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: pod-0.1.0
+    task: "sleeper"
+  annotations:
+    "foo": "bar"
+    "helm.sh/hook": "pre-install"
+spec:
+  containers:
+    -
+      image: "alpine:3.5"
+      imagePullPolicy: ""
+      resources:
+        requests:
+          memory: 512Mi
+
+      command: ["sleep"]
+      args:
+        - "900"
+      env:
+        - name: ENV_VAR
+          value: "1"
+        - name: ENV_VAR2
+          value: "2"
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: some-secret-out-there
+
+      ports:
+        - containerPort: 8080
+          name: web
+
+      volumeMounts:
+        - name: release-name-pod-cache
+          path: /cache
+        - name: release-name-pod-data
+          path: /var/run/data
+      livenessProbe:
+        httpGet:
+          path: /
+          port: http
+        initialDelaySeconds: 120
+        timeoutSeconds: 5
+
+      readinessProbe:
+        httpGet:
+          path: /
+          port: http
+        initialDelaySeconds: 5
+        timeoutSeconds: 1
+
+  imagePullSecrets:
+    - name: dockerhub-secret
+
+  volumes:
+    - name: release-name-pod-cache
+      persistentVolumeClaim:
+        claimName: release-name-pod-cache
+    - name: release-name-pod-data
+      persistentVolumeClaim:
+        claimName: release-name-pod-data
+```
+
+### `common.podspec.simple` and `common.container.simple`
+
+Two helper templates, `common.podspec.simple` and `common.container.simple`, are
+used by all of the kinds that require pod specs.
+
+### `common.job`
+
+The `common.job.simple` template creates a new Job resource. It is highly optimized
+for single-run jobs. Jobs are given names that will not collide, so any
+Helm update/install operation will create a new instance of this job, even if it had done so
+allready.
+
+Jobs can also be easily created as hooks.
+
+Jobs created with `common.job.simple` are not easy for Helm to delete, and
+a `helm delete` operation _may not delete jobs created this way_ because the
+job name is recreated on each run.
+
+Example template:
+
+```yaml
+{{- $params := dict "top" . "job" .Values.someJob -}}
+{{ template "common.job.simple" $params }}
+```
+
+Example values:
+
+```yaml
+someJob:
+  image: alpine
+  tag: "3.5"
+  command: "sleep"
+  args: ["900"]
+  labels:               # This is an abritrary list of labels, appended to regular labels.
+    task: "sleeper"
+  hook: "pre-upgrade"   # Formatted as a helm hook and merged into the annotations
+  restartPolicy: "Never"
+```
+
+(Note that most of the values supported for `common.podspec.simple` are also
+supported for jobs)
+
+Example output:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: release-name-job-bagwwdi    # Notice the appended random suffix
+  labels:
+    app: release-name-job
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: job-0.1.0
+    task: "sleeper"
+  annotations:
+    "helm.sh/hook": "pre-upgrade"
+  spec:
+    template:
+      metadata:
+        name: release-name-job-bagwwdi
+        labels:
+          app: release-name-job
+          heritage: "Tiller"
+          release: "RELEASE-NAME"
+          chart: job-0.1.0
+      spec:
+        containers:
+          -
+            image: "alpine:3.5"
+            imagePullPolicy: ""
+            command: ["sleep"]
+            args:
+              - "900"
+        restartPolicy: "Never"
+```
+

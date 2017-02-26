@@ -1,0 +1,9 @@
+someJob:
+  image: alpine
+  tag: "3.5"
+  command: "sleep"
+  args: ["900"]
+  labels:               # This is an abritrary list of labels, appended to regular labels.
+    task: "sleeper"
+  hook: "pre-upgrade"   # Formatted as a helm hook and merged into the annotations
+  restartPolicy: "Never"

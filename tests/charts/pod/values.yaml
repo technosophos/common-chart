@@ -1,0 +1,56 @@
+minimalPod:       # The only required field is image.
+  image: nginx    # This will be resolved to nginx:latest
+
+regularPod:
+  image: alpine         # image is combined with tag.
+  tag: "3.5"
+  command: "sleep"
+  args: ["900"]
+  labels:               # This is an abritrary list of labels, appended to regular labels.
+    task: "sleeper"
+  annotations:
+    foo: bar
+  hook: "pre-install"   # Formatted as a helm hook and merged into the annotations
+  volumeMounts:         # Define volume mounts and volumes.
+    - mountPath: "/cache"
+      name: "cache-volume"
+  volumes:
+    - name: "cache-volume"
+      emptyDir: {}
+  imagePullSecrets:     # Add imagePullSecrets if image needs them.
+    - name: "dockerhub-secret"
+  ports:
+    - name: web
+      containerPort: 8080
+  env:
+    - name: "ENV_VAR"
+      value: "1"
+    - name: "ENV_VAR2"
+      value: "2"
+    - name: "PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: "some-secret-out-there"
+          key: "password"
+  persistence:      # See notes on persistence.
+    enabled: true
+    mounts:         # If a persistence section is specified, there must be at least one mount
+      - suffix: "-cache"
+        path: "/cache"
+      - suffix: "-data"
+        path: "/var/run/data"
+  livenessProbe:    # probes are passed in as-is
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 120
+    timeoutSeconds: 5
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    timeoutSeconds: 1
+  resources:        # resources are passed in as-is
+    requests:
+      memory: 512Mi

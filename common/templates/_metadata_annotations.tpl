@@ -10,3 +10,9 @@ Any valid hook may be passed in. Separate multiple hooks with a ",".
 {{- define "common.hook" -}}
 "helm.sh/hook": {{printf "%s" . | quote}}
 {{- end -}}
+
+{{- define "common.annote" -}}
+{{- range $k, $v := . }}
+{{ $k | quote }}: {{ $v | quote }}
+{{- end -}}
+{{- end -}}

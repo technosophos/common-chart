@@ -1,35 +1,31 @@
-{{define "common.job"}}
+{{- /*
+common.job.simple defines a simple job with one pod running on container.
+
+Note that this uses 'common.fullname.unique' to generate the name, which causes
+new jobs to be created during each upgarde action. Jobs designed this way are
+also suitable for use in hooks. (set '.job.hook' accordingly).
+
+*/ -}}
+{{ define "common.job.simple" }}
+{{- $fullname := include "common.fullname.unique" .top -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{template "common.fullname" .}}
+  name: {{ $fullname }}
   labels:
-    {{block "common.job.labels" . -}}
-    {{template "common.metadata.labels"}}
-    {{- end}}
-    {{- block "common.job.xlabels" .}}{{end}}
+{{ include "common.labels.standard" .top | indent 4 -}}
+{{ if .job.labels }}{{ include "common.labelize" .job.labels | indent 4 }}{{ end }}
+  annotations:
+    {{- if .job.annotations }}{{ include "common.annote" .job.annotations | indent 4 }}{{- end -}}
+    {{- if .job.hook }}
+    {{ template "common.hook" .job.hook }}
+    {{- end }}
 spec:
   template:
     metadata:
-      name: {{template "common.fullname" .}}
+      name: {{ $fullname }}
       labels:
-        {{block "common.job.template.labels" . -}}
-        app: {{template "common.fullname" .}}
-        heritage: {{ .Release.Service | quote }}
-        release: {{ .Release.Name | quote }}
-        chart: {{template "common.chartref" . }}
-        {{- end}}
-        {{- block "common.job.spec.xlabels" .}}{{end}}
-    spec:
-      containers:
-      {{- block "common.job.containers" . }}
-      - name: {{template "common.fullname" .}}-job
-        image: "{{.Values.jobImage | default "alpine"}}:{{.Values.jobTag | default "latest"}}"
-        imagePullPolicy: {{default "IfNotPresent" .Values.pullPolicy}}
-        {{- block "common.job.containers.extra" . }}{{end}}
-      {{end}}
-      restartPolicy: {{default "Never" .Values.restartPolicy}}
-      {{- block "common.job.volumeMounts" . }}{{ end -}}
-      {{- block "common.job.spec.extra" . }}{{ end -}}
-    {{- block "common.job.volumes" .}}{{ end -}}
-{{end}}
+{{ include "common.labels.standard" .top | indent 8 -}}
+{{- $params := dict "top" .top "pod" .job -}}
+{{ include "common.podspec.simple" $params | indent 4 }}
+{{- end -}}

@@ -28,7 +28,7 @@ spec:
     {{ if .name }}name: {{ default "default" .name }}{{ end -}}
   {{- end }}
   selector:
-  {{- if .service.selector -}}
+  {{- if .service.selector }}
 {{ toYaml .service.selector | indent 4 }}
   {{- else }}
     provides: {{ $overrideName }}
