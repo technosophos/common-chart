@@ -10,6 +10,7 @@ also suitable for use in hooks. (set '.job.hook' accordingly).
 {{- $fullname := include "common.fullname.unique" .top -}}
 apiVersion: batch/v1
 kind: Job
+{{ template "common.metadata" (dict "top" .top "metadata" .job "nameOverride" $fullname) }}
 metadata:
   name: {{ $fullname }}
   labels:

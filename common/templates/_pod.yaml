@@ -7,16 +7,7 @@ This assumes a pod with one main container.
 {{- define "common.pod.simple" }}
 apiVersion: v1
 kind: Pod
-metadata:
-  name: {{ template "common.fullname" .top }}
-  labels:
-{{ include "common.labels.standard" .top | indent 4 -}}
-{{ if .pod.labels }}{{ include "common.labelize" .pod.labels | indent 4 }}{{ end }}
-  annotations:
-    {{- if .pod.annotations }}{{ include "common.annote" .pod.annotations | indent 4 }}{{- end -}}
-    {{- if .pod.hook }}
-    {{ template "common.hook" .pod.hook }}
-    {{- end -}}
+{{ template "common.metadata" (dict "top" .top "metadata" .pod) }}
 {{ template "common.podspec.simple" . }}
 {{- end -}}
 

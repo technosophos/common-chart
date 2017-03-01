@@ -1,0 +1,3 @@
+{{ template "common.configmap" (dict "top" . "configmap" .Values.bio) }}
+---
+{{ template "common.configmap" (dict "top" . "configmap" .Values.pet) }}

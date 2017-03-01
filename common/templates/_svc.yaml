@@ -10,15 +10,8 @@ The passed in context MUST be structured like this:
 {{- $fullname := include "common.fullname" .top -}}
 {{- $overrideName := default "" .service.suffix | printf "%s%s" $fullname -}}
 apiVersion: v1
-kind: Service
-metadata:
-  name: {{ $overrideName }}
-  labels:
-    provides: {{ $overrideName }}
-{{ include "common.labels.standard" .top | indent 4}}
-{{- if .service.labels -}}
-{{ include "common.labelize" .service.labels | indent 4 }}
-{{- end }}
+kind: Service {{- $sl := dict "provides" $overrideName }}
+{{ template "common.metadata" (dict "top" .top "metadata" .service "overrideName" $overrideName "systemLabels" $sl) }}
 spec:
   ports:
   {{- range .service.ports }}

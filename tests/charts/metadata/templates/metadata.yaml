@@ -1,0 +1,4 @@
+{{ template "common.metadata" (dict "top" . "metadata" .Values.bio) }}
+---
+{{ template "common.metadata" (dict "top" . "metadata" .Values.pet "nameOverride" .Values.pet.nameOverride) }}
+

@@ -1,0 +1,23 @@
+bio:
+  name: example
+  items:
+    first: matt
+    last: butcher
+    nick: technosophos
+    bio: |-
+      Matt is a software architect. He is the author of eight book, most recently
+      "Go in Practice", which he co-authored with Matt Farina. Matt holds a Ph.D.
+      in Philosophy from Loyola University Chicago, where he teaches in the
+      Department of Computer Science.
+  labels:
+    format: bio
+    destination: archive
+  hook: pre-install
+
+pet:
+  items:
+    zeus: cat
+    athena: cat
+    julius: cat
+  files:
+    one: file1.txt

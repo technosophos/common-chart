@@ -91,6 +91,80 @@ It is also impacted by the prefix and suffix definitions, as well as by
 
 Note that the effective maximum length of this function is 63 characters, not 54.
 
+### `common.metadata`
+
+The `common.metadata` helper generates the `metadata:` section of a Kubernetes
+resource.
+
+This takes three objects:
+  - .top: top context
+  - .nameOverride: override the fullname with this name
+  - .metadata
+    - .labels: key/value list of labels
+    - .annotations: key/value list of annotations
+    - .hook: name(s) of hook(s)
+
+It generates standard labels, annotations, hooks, and a name field.
+
+Example template:
+
+```yaml
+{{ template "common.metadata" (dict "top" . "metadata" .Values.bio) }}
+---
+{{ template "common.metadata" (dict "top" . "metadata" .Values.pet "nameOverride" .Values.pet.nameOverride) }}
+```
+
+Example values:
+
+```yaml
+bio:
+  name: example
+  labels:
+    first: matt
+    last: butcher
+    nick: technosophos
+  annotations:
+    format: bio
+    destination: archive
+  hook: pre-install
+
+pet:
+  nameOverride: Zeus
+
+```
+
+Example output:
+
+```yaml
+metadata:
+  name: release-name-metadata
+  labels:
+    app: release-name-metadata
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: metadata-0.1.0
+    first: "matt"
+    last: "butcher"
+    nick: "technosophos"
+  annotations:
+    "destination": "archive"
+    "format": "bio"
+    "helm.sh/hook": "pre-install"
+---
+metadata:
+  name: Zeus
+  labels:
+    app: release-name-metadata
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: metadata-0.1.0
+  annotations:
+```
+
+Most of the common templates that define a resource type (e.g. `common.configmap`
+or `common.job`) use this to generate the metadata, which means they inherit
+the same `labels`, `annotations`, `nameOverride`, and `hook` fields.
+
 ### `common.labelize`
 
 `common.labelize` turns a map into a set of labels.
@@ -585,3 +659,209 @@ metadata:
         restartPolicy: "Never"
 ```
 
+### `common.secret`
+
+The `common.secret` template generates Secret resources.
+
+Configuration is very similar to `common.configmap`.
+
+This accepts the following parameters:
+
+- top: the top context
+- secret: the secret
+  - labels
+  - annotations
+  - hook
+  - items: key/value items whose values will be base64 encoded
+  - files: key/filename items whose file data will be fetched from the `.Files`
+    object and placed into the map with the given key.
+
+Note that the base64-encoded objects are formatted at 80 columns (not counting
+the indent level)
+
+Example template:
+```yaml
+{{ template "common.secret" (dict "top" . "secret" .Values.bio) }}
+---
+{{ template "common.secret" (dict "top" . "secret" .Values.pet) }}
+```
+The above defines two secrets.
+
+Example values:
+```yaml
+bio:
+  name: example
+  items:
+    first: matt
+    last: butcher
+    nick: technosophos
+    bio: |-
+      Matt is a software architect. He is the author of eight book, most recently
+      "Go in Practice", which he co-authored with Matt Farina. Matt holds a Ph.D.
+      in Philosophy from Loyola University Chicago, where he teaches in the
+      Department of Computer Science.
+  labels:
+    format: bio
+    destination: archive
+  hook: pre-install
+
+pet:
+  items:
+    zeus: cat
+    athena: cat
+    julius: cat
+  files:
+    one: file1.txt
+```
+
+Example output:
+```yaml
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: release-name-secret
+  labels:
+    app: release-name-secret
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: secret-0.1.0
+    destination: "archive"
+    format: "bio"
+  annotations:
+    "helm.sh/hook": "pre-install"
+data:
+  "bio": |-
+    TWF0dCBpcyBhIHNvZnR3YXJlIGFyY2hpdGVjdC4gSGUgaXMgdGhlIGF1dGhvciBvZiBlaWdodCBib29
+    LCBtb3N0IHJlY2VudGx5CiJHbyBpbiBQcmFjdGljZSIsIHdoaWNoIGhlIGNvLWF1dGhvcmVkIHdpdGg
+    TWF0dCBGYXJpbmEuIE1hdHQgaG9sZHMgYSBQaC5ELgppbiBQaGlsb3NvcGh5IGZyb20gTG95b2xhIFV
+    aXZlcnNpdHkgQ2hpY2Fnbywgd2hlcmUgaGUgdGVhY2hlcyBpbiB0aGUKRGVwYXJ0bWVudCBvZiBDb21
+    dXRlciBTY2llbmNlLg==
+  "first": |-
+    bWF0dA==
+  "last": |-
+    YnV0Y2hlcg==
+  "nick": |-
+    dGVjaG5vc29waG9z
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: release-name-secret
+  labels:
+    app: release-name-secret
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: secret-0.1.0
+  annotations:
+data:
+  "athena": |-
+    Y2F0
+  "julius": |-
+    Y2F0
+  "zeus": |-
+    Y2F0
+  "one": |-
+    VGhpcyBpcyBhIGZpbGUuCg==
+```
+
+### `common.configmap`
+
+The `common.configmap` template produces ConfigMap resources.
+
+This accepts the following parameters:
+
+- top: the top context
+- configmap: config map data
+  - labels
+  - annotations
+  - hook
+  - items: key/value items 
+  - files: key/filename items whose file data will be fetched from the `.Files`
+    object and placed into the map with the given key.
+
+Example template:
+```yaml
+{{ template "common.configmap" (dict "top" . "configmap" .Values.bio) }}
+---
+{{ template "common.configmap" (dict "top" . "configmap" .Values.pet) }}
+```
+
+The above will generate two ConfigMaps that accept data from the following values.
+
+Example values:
+```yaml
+bio:
+  name: example
+  items:
+    first: matt
+    last: butcher
+    nick: technosophos
+    bio: |-
+      Matt is a software architect. He is the author of eight book, most recently
+      "Go in Practice", which he co-authored with Matt Farina. Matt holds a Ph.D.
+      in Philosophy from Loyola University Chicago, where he teaches in the
+      Department of Computer Science.
+  labels:
+    format: bio
+    destination: archive
+  hook: pre-install
+
+pet:
+  items:
+    zeus: cat
+    athena: cat
+    julius: cat
+  files:
+    one: file1.txt
+```
+
+Example output:
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: release-name-configmap
+  labels:
+    app: release-name-configmap
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: configmap-0.1.0
+    destination: "archive"
+    format: "bio"
+  annotations:
+    "helm.sh/hook": "pre-install"
+data:
+  "bio": |-
+    Matt is a software architect. He is the author of eight book, most recently
+    "Go in Practice", which he co-authored with Matt Farina. Matt holds a Ph.D.
+    in Philosophy from Loyola University Chicago, where he teaches in the
+    Department of Computer Science.
+  "first": |-
+    matt
+  "last": |-
+    butcher
+  "nick": |-
+    technosophos
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: release-name-configmap
+  labels:
+    app: release-name-configmap
+    heritage: "Tiller"
+    release: "RELEASE-NAME"
+    chart: configmap-0.1.0
+  annotations:
+data:
+  "athena": |-
+    cat
+  "julius": |-
+    cat
+  "zeus": |-
+    cat
+  "one": |-
+    This is a file.
+```

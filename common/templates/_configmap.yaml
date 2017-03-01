@@ -1,13 +1,26 @@
-{{define "common.configmap" -}}
+{{- /*
+
+common.configmap is a generic key/value configmap.
+
+It takes two objects:
+  - .top
+  - .configmap
+
+It will check .configmap for the following:
+  - .configmap.items: a map of key/value pairs.
+
+*/ -}}
+    {{define "common.configmap" -}}{{- $top := .top -}}
 apiVersion: v1
 kind: ConfigMap
-metadata:
-  name: {{template "common.fullname" .}}
-  labels:
-    {{ block "common.configmap.labels" . -}}
-    {{ template "common.metadata.labels" . }}
-    {{- end -}}
-    {{- block "common.configmap.xlabels" .}}{{end}}
+{{ template "common.metadata" (dict "top" .top "metadata" .configmap) }}
 data:
-  {{block "common.configmap.data" .}}# Data goes here{{end}}
+{{- range $key, $val := .configmap.items }}
+  {{$key | quote }}: |-
+{{ $val | indent 4 }}
+{{- end -}}
+{{- range $key, $fname := .configmap.files}}
+  {{$key | quote }}: |-
+{{ $top.Files.Get $fname | indent 4 }}
+{{- end -}}
 {{- end}}

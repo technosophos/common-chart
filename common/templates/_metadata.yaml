@@ -1,0 +1,29 @@
+{{- /*
+common.metadata creates a standard metadata header.
+
+This takes two objects:
+  - .top: top context
+  - .nameOverride: override the fullname with this name
+  - .metadata
+    - .labels: key/value list of labels
+    - .annotations: key/value list of annotations
+    - .hook: name(s) of hook(s)
+  - .systemLabels: system-level add-on labels that should not be exposed to user
+    configuration.
+
+It creates a 'metadata:' section with name, labels, and annotations.
+
+*/ -}}
+{{ define "common.metadata" -}}
+metadata:
+  name: {{ if .nameOverride }}{{ .nameOverride }}{{ else }}{{ template "common.fullname" .top }}{{ end }}
+  labels:
+{{ include "common.labels.standard" .top | indent 4 -}}
+{{ if .metadata.labels }}{{ include "common.labelize" .metadata.labels | indent 4 }}{{ end -}}
+{{ if .systemLabels }}{{ include "common.labelize" .systemLabels | indent 4 }}{{ end }}
+  annotations:
+{{- if .metadata.annotations }}{{ include "common.annote" .metadata.annotations | indent 4 }}{{- end -}}
+    {{- if .metadata.hook }}
+    {{ template "common.hook" .metadata.hook }}
+    {{- end }}
+{{- end -}}
