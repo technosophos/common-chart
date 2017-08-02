@@ -29,7 +29,7 @@ Include the common chart as a subchart:
 
 ```console
 $ cd mychart/charts
-$ helm fetch common
+$ helm fetch common/common
 ```
 
 Use the `common.*` definitions in your code. For example, we could add this to
